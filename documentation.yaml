@@ -1,0 +1,849 @@
+swagger: '2.0'
+info:
+  description: API for internship assignment
+  version: 1.0.0
+  title: Assignment API
+  # put the contact info for your development or API team
+  contact:
+    email: pawargaurang1212@gmail.com
+
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+
+# tags are used for organizing operations
+tags:
+- name: student
+  description: Operations available for students
+- name: instructor
+  description: Operations available for instructors
+
+paths:
+  /api/student/signup:
+    post:
+      tags:
+      - student
+      summary: Creates new user account
+      operationId: signupUser
+      description: Adds an item to the system
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: student
+        description: The student to create
+        schema:
+          type: object
+          required:
+          - firstName
+          - lastName
+          - password
+          - email
+          properties:
+            firstName:
+              type: string
+            lastName:
+              type: string
+            password: 
+              type: string
+            email:
+              type: string
+      responses:
+        200:
+          description: search results matching criteria
+          schema:
+            type: object
+            example:
+              student created
+        400:
+          description: invalid input, object invalid
+        409:
+          description: user already exist
+        500:
+          description: unknown error occured
+        
+  /api/student/login:
+    post:
+      tags:
+      - student
+      summary: Login 
+      operationId: loginUser
+      description: Logs in user
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+        - in: body
+          name: Credentials
+          description: User credentials
+          schema:
+            type: object
+            required: 
+            - email
+            - password
+            properties:
+              email:
+                type: string
+              password:
+                type: string
+    
+      responses:
+        200: 
+          description: login successful
+        400:
+          description: invalid email or password
+        404:
+          description: no user found
+        500:
+          description: unexpected error
+  /api/student/profile:
+    get:
+      tags:
+      - student
+      summary: Get profile
+      operationId: studentProfile
+      description: Fetched student profile
+      responses:
+        200:
+          description: User profile
+          schema:
+            $ref: '#/definitions/Student'
+        404:
+          description: User not found
+        401:
+          description: Unauthorized request
+    put:
+      tags:
+      - student
+      summary: Update profile
+      operationId: updateStudentProfile
+      parameters:
+        - in: body
+          name: updatedProfile
+          description: Updated user profile
+          schema:
+            $ref: '#/definitions/updatedStudent'
+      responses:
+        200:
+          description: Profile updated
+          schema:
+            $ref: '#/definitions/newStudent'
+        401:
+          description: Unauthorized request
+        500:
+          description: Unknown error occured
+          
+  /api/student/tasks:
+    get:
+      tags:
+      - student
+      summary: Get tasks
+      operationId: getTasks
+      description: Fetch tasks
+      parameters:
+      - in: query
+        name: instructorID
+        description: pass an optional instructor id which will fetch all the tasks created by that insctuctor
+        required: false
+        type: string
+      - in: query
+        name: count
+        description: count of tasks to be fetched
+        required: false
+        type: integer
+      - in: query
+        name: submitted
+        description:  boolean parameter which if set to true will also fetch tasks previously completed by student
+        required: false
+        type: boolean
+      responses:
+        404:
+          description: No matching tasks found
+        200:
+          description: Returns list of tasks
+          schema:
+            type: array
+            items: 
+              $ref: "#/definitions/task1"
+        500:
+          description: Unknown error occured
+  /api/student/tasks/{taskID}:
+    get:
+      tags:
+      - student
+      summary: Get one task
+      operationId: getOneTask
+      description: Fetch one specific task
+      parameters:
+      - in: path
+        name: taskID
+        required: True
+        type: string
+      responses:
+        200:
+          description: Task
+          schema:
+            $ref: "#/definitions/task1"
+        404:
+          description: Task not found
+        500: 
+          description: Unknown error eccured
+  /api/student/submissions:
+    get:
+      tags:
+      - student
+      summary: Get all submissions
+      operationId: getSubmissions
+      description: Fetch all the submissions
+      parameters:
+      - in: query
+        name: instructorID
+        type: string
+        required: false
+      - in: query
+        name: count
+        type: integer
+        required: false
+      - in: query
+        name: taskID
+        type: string
+        required: false
+      - in: query
+        name: graded
+        required: false
+        type: boolean
+      responses:
+        200:
+          description: Returns list of submissions
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/submission"
+        404: 
+          description: No submissions found
+        401: 
+          description: Unauthorized request
+        500: 
+          description: Unknown error occured
+    post:
+      tags:
+      - student
+      summary: Posting submission
+      operationId: postSubmission
+      description: Post submission for task
+      parameters:
+      - in: body
+        name: submission
+        description: Submission body for a specific task
+        schema:
+          $ref: '#/definitions/submissionBody'
+      responses:
+        200:
+          description: submission successful
+        401: 
+          description: unauthorized request
+        404:
+          description: task not found
+        500:
+          description: unknown error occured
+      
+      
+  /api/student/submission/{submissionID}:
+    get:
+      tags:
+      - student
+      summary: Get one submission
+      operationId: getOneSubmission
+      description: Fetched one submission with submissionID
+      parameters:
+      - in: path
+        name: submissionID
+        type: string
+        required: True
+      responses:
+        200:
+          description: returns the submission object
+          schema:
+            $ref: '#/definitions/submission'
+        404:
+          description: submission not found
+        401:
+          description: unauthorized request
+        500:
+          description: unknown error occured
+  
+
+        
+#Instructor api endpoints
+  
+  /api/instructor/signup:
+    post:
+      tags:
+      - instructor
+      summary: Instructor signup
+      operationId: signupInscructor
+      description: Signup for instructor
+      parameters:
+      - in: body
+        name: instructorData
+        description: All the signup data required for registration
+        schema:
+          $ref: "#/definitions/instructorSignup"
+      responses:
+        200:
+          description: signup successful
+        400:
+          description: invalid input, object invalid
+        409:
+          description: user already exist
+        500:
+          description: unknown error occured
+  
+  /api/instructor/login:
+    post:
+      tags:
+      - instructor
+      summary: Login for instructor
+      operationId: loginInstructor
+      description: Login for instructor
+      parameters:
+      - in: body
+        name: Credentials
+        description: User credentials
+        schema:
+          type: object
+          required: 
+          - email
+          - password
+          properties:
+            email:
+              type: string
+            password:
+              type: string
+      responses:
+        200:
+          description: Login successful
+        400:
+          description: invalid email or password
+        404:
+          description: User not found
+        500:
+          description: Unknown error occured
+        
+  /api/instructor/tasks:
+    get:
+      tags:
+      - instructor
+      summary: Get tasks
+      operationId: getTasksInstructor
+      description: Get all tasks 
+      parameters:
+      - in: query
+        name: my
+        required: true
+        type: boolean
+      - in: query
+        name: count
+        required: false
+        type: integer
+      - in: query
+        name: active
+        required: false
+        type: boolean
+      responses:
+        200:
+          description: Returns list of tasks
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/task1'
+        401:
+          description: unauthorized request
+        404:
+          description: tasks not found
+        500:
+          description: unknown error occured
+          
+    post:
+      tags:
+      - instructor
+      summary: Post tasks
+      operationId: postTasks
+      description: Post tasks
+      parameters:
+      - in: body
+        name: task
+        schema:
+          $ref: "#/definitions/postTask"
+      responses:
+        200:
+          description: task successfully created
+        401: 
+          description: unauthorized request
+        500:
+          description: unknown error occurred
+        
+  /api/instructor/tasks/{taskID}:
+    get:
+      tags:
+      - instructor
+      summary: Get one task
+      operationId: getOneTaskInstructor
+      description: Get one specific task
+      parameters:
+      - in: path
+        name: taskID
+        type: string
+        required: true
+      responses:
+        200:
+          description: return task object along with boolean field owner=true if task is created by instructor
+          schema:
+            $ref: '#/definitions/getTaskInstructor'
+        404:
+          description: task not found
+        500: 
+          description: unknown error occured
+    delete:
+      tags: 
+      - instructor
+      summary: Delete task
+      operationId: deleteTask
+      description: Delete particular task owned by instructor
+      parameters:
+      - in: path
+        name: taskID
+        type: string
+        required: true
+      responses:
+        200:
+          description: task deleted
+        401:
+          description: unauthorized request
+        404: 
+          description: task not found
+        500:
+          description: unknown error occured
+    put: 
+      tags: 
+      - instructor
+      summary: Updatetask
+      operationId: updateTask
+      description: Update particular task owned by instructor
+      parameters:
+      - in: path
+        name: taskID
+        type: string
+        required: true
+      responses:
+        200:
+          description:  task updated
+          schema:
+            $ref: "#/definitions/getTaskInstructor"
+        401:
+          description: unauthorized request
+        404: 
+          description: task not found
+        500:
+          description: unknown error occured
+    
+  /api/instructor/submissions:
+    get:
+      tags:
+      - instructor
+      summary: Get all student submuissions
+      operationId: getSubmissionInstructor
+      description: Get student submissions for tasks created by instructor
+      parameters:
+      - in: query
+        name: count
+        type: integer
+        required: true
+      - in: query
+        name: graded
+        type: boolean
+        required: true
+      - in: query
+        name: active
+        type: boolean
+      - in: query
+        name: taskID
+        type: string
+      responses:
+        200: 
+          description: returns list of submission objects
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/submission'
+        
+        401: 
+          description: unauthorized request
+        404:
+          description: no matching tasks found
+        500:
+          description: unknown error occured
+  
+  /api/instructor/submissions/{submissionID}:
+    get:
+      tags:
+      - instructor
+      summary: Get one submission
+      operationId: getOneSubmissionInstructor
+      description: Get one particular submission created by that instructor
+      parameters:
+      - in: path
+        name: submissionID
+        type: string
+        required: true
+      responses:
+        200: 
+          description: returns the submssion object
+          schema:
+            $ref: '#/definitions/submission'
+        400: 
+          description: unauthorized request
+        404:
+          description: submission not found
+        500: 
+          description: unkonown error occured
+    put:  
+      tags:
+      - instructor
+      operationId: updateSubmissionIstructor
+      summary: Update submission
+      description: Grade submission for task created by instuctor
+      parameters: 
+      - in: path
+        name: submissionID
+        type: string
+        required: true
+      - in: body
+        name: grade
+        schema:
+          $ref: '#/definitions/grade'
+      responses:
+        200:
+          description: graded successfully
+          schema:
+            $ref: '#/definitions/submission'
+        400:
+          description: unauthorized request
+        404:
+          description: submission not found
+        500:
+          description: unknown error occured
+    
+        
+        
+  
+  
+definitions:
+  Student:
+    type: object
+    required: 
+    - studentID
+    - firstName
+    - lastName
+    - profilePicUrl
+    - email
+    - track
+    properties:
+      studentID:
+        type: string
+        format: uuid
+        example: d290f1ee-6c54-4b01-90e6-d701748f0851
+      firstName:
+        type: string
+        example: Gaurang
+      lastName: 
+        type: string
+        example: Pawar
+      profilePicUrl:
+        type: string
+        example: s3 object string
+      email: 
+        type: string
+        example: pawargaurang1212@gmail.com
+      track:
+        type: integer
+        format: int32
+        example: 2
+        
+  newStudent:
+    type: object
+    required: 
+    - studentID
+    - firstName
+    - lastName
+    - profilePicUrl
+    - email
+    - track
+    properties:
+      studentID:
+        type: string
+        format: uuid
+        example: d290f1ee-6c54-4b01-90e6-d701748f0851
+      firstName:
+        type: string
+        example: Gaurang
+      lastName: 
+        type: string
+        example: Pawar
+      profilePicUrl:
+        type: string
+        example: s3 object string
+      email: 
+        type: string
+        example: pawargaurang1212@gmail.com
+      track:
+        type: integer
+        format: int32
+        example: 1
+        
+  updatedStudent:
+    type: object
+    required: 
+    - firstName
+    - lastName
+    - profilePicUrl
+    - track
+    properties:
+      firstName:
+        type: string
+        example: Gaurang
+      lastName: 
+        type: string
+        example: Pawar
+      profilePicUrl:
+        type: string
+        example: s3 object string
+      track:
+        type: integer
+        format: int32
+        example: 1
+ 
+  task1:
+    type: object
+    required:
+    - taskID
+    - instructorName
+    - taskName
+    - instructorID
+    - taskDescription
+    - taskImageUrl
+    - tutorialVideoUrl
+    - createdOn 
+    - dueDate
+    - active
+    - difficulty
+    properties:
+      taskID:
+        type: string
+        example: 25ab0406-bc53-49cb-8058-e7d83aaf536b
+      taskName: 
+        type: string
+        example: Image layering
+      instructorID: 
+        type: string
+        example: e2c0565e-d2db-4549-9e8b-70ae849e892d
+      instructorName:
+        type: string
+        example: John Doe
+      taskDescription:
+        type: string
+        example: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+      taskImageUrl:
+        type: string
+        example: aws.s3.341dd/asd33
+      createdOn:
+        type: string
+        example: "02-07-2021-01:37AM"
+      dueDate:
+        type: string
+        example: "02-07-2021-12:00PM"
+      active:
+        type: boolean
+        example: True
+      tutorialVideoUrl: 
+        type: string
+        example: https://www.youtube.com/watch?v=KGNF2das3323
+      difficulty:
+        type: integer
+        format: int32
+        example: 2
+  submission:
+    type: object
+    required:
+    - submissionID
+    - taskID
+    - userID
+    - grade
+    - submittedOn
+    - instructorComment
+    - submissionImageUrl
+    properties:
+      submissionID:
+        type: string
+        example: 0d32a6a0-cfeb-4252-98a8-d7b9f99c4608
+      taskID:
+        type: string
+        example: 25ab0406-bc53-49cb-8058-e7d83aaf536b
+      userID:
+        type: string
+        example: d290f1ee-6c54-4b01-90e6-d701748f0851
+      grade:
+        type: integer
+        example: 5
+      submittedOn:
+        type: string
+        example: "02-07-2021-01:37AM"
+      instructorComment: 
+        type: string
+        example: Good job!!
+      submissionImageUrl: 
+        type: string
+        example: aws.s3.341dd/asd323d
+  submissionBody:
+    type: object
+    required:
+    - taskID
+    - images
+    properties:
+      taskID:
+        type: string
+        example: f8e2c853-96e5-4f2c-b6ad-2a1e6771a7a5
+      images:
+        type: string
+        format: binary
+        example: "image"
+#Models for instructor
+  instructorSignup:
+    type: object
+    required:
+    - firstName
+    - lastName
+    - phnNumber
+    - email
+    - password
+    properties:
+      firstName:
+        type: string
+        example: John 
+      lastName:
+        type: string
+        example: Doe
+      email:
+        type: string
+        example: john.doe@gmail.com
+      phnNumber:
+        type: string
+        example: 9867669343
+      password:
+        type: string 
+        example: password@123
+      
+  postTask:
+    type: object
+    required:
+    - taskName
+    - taskDescription
+    - tutorialVideoUrl
+    - dueDate
+    - difficulty
+    - image
+    properties:
+      taskName:
+        type: string
+        example: Image enhancing
+      taskDescription:
+        type: string
+        example: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+      tutorialVideoUrl: 
+        type: string
+        example: https://www.youtube.com/watch?v=KGNF2das3323
+      difficulty:
+        type: integer
+        example: 2
+      dueDate:
+        type: string
+        format: date-time
+        example: 02-07-2021-02-07PM
+      image:
+        type: string
+        format: binary
+        example: image
+        
+  getTaskInstructor:
+    type: object
+    required:
+    - taskID
+    - instructorName
+    - taskName
+    - instructorID
+    - taskDescription
+    - taskImageUrl
+    - tutorialVideoUrl
+    - createdOn 
+    - dueDate
+    - active
+    - difficulty
+    - owner
+    properties:
+      taskID:
+        type: string
+        example: 25ab0406-bc53-49cb-8058-e7d83aaf536b
+      taskName: 
+        type: string
+        example: Image layering
+      instructorID: 
+        type: string
+        example: e2c0565e-d2db-4549-9e8b-70ae849e892d
+      instructorName:
+        type: string
+        example: John Doe
+      taskDescription:
+        type: string
+        example: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+      taskImageUrl:
+        type: string
+        example: aws.s3.341dd/asd33
+      createdOn:
+        type: string
+        example: "02-07-2021-01:37AM"
+      dueDate:
+        type: string
+        example: "02-07-2021-12:00PM"
+      active:
+        type: boolean
+        example: True
+      tutorialVideoUrl: 
+        type: string
+        example: https://www.youtube.com/watch?v=KGNF2das3323
+      difficulty:
+        type: integer
+        format: int32
+        example: 2
+      owner:
+        type: boolean
+        example: true
+      
+  grade:
+    type: object
+    required:
+    - grade
+    properties:
+      grade:
+        type: integer
+        example: 3
+      instructorComment: 
+        type: string
+        example: Good job!!
+# Added by API Auto Mocking Plugin
+host: virtserver.swaggerhub.com
+basePath: /t8382/instructor_api/1.0.0
+schemes:
+ - https
